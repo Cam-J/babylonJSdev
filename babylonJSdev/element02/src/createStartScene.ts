@@ -94,7 +94,7 @@ import {
     return spriteManagerTrees;
   }
 
-  function createBox(scene: Scene){
+  function createBox(scene: Scene, width: number){
     const boxMat = new StandardMaterial("boxMat");
     boxMat.diffuseTexture = new Texture("textures/cubehouse.png");
 
@@ -113,7 +113,7 @@ import {
     return box;
   }
 
-  function createRoof(scene: Scene){
+  function createRoof(scene: Scene, width: number){
     //texture
     const roofMat = new StandardMaterial("roofMat");
     roofMat.diffuseTexture = new Texture("https://assets.babylonjs.com/environments/roof.jpg");
@@ -128,28 +128,60 @@ import {
     return roof;
   }
 
-  function createHouse(scene: Scene){
-    const house = new Mesh("house", scene);
-    const box = createBox(scene);
-    const roof = createRoof(scene);
-
-    box.parent = house;
-    roof.parent = house;
+  function createHouse(scene: Scene, width: number) {
+    const box = createBox(scene, width);
+    const roof = createRoof(scene, width);
+    const house: any = Mesh.MergeMeshes([box, roof], true, false, undefined, false, true);
+    //for the UNDEFINED parameter - the BabylonJS Documentation says to use null instead of undefined but this is in JAVASCRIPT.
+    //TypeScript does not accept null.
     return house;
   }
 
-  function cloneHouses(scene: Scene){
-    const house = new Mesh("house", scene);
-    const box = createBox(scene);
-    const roof = createRoof(scene);
+  function cloneHouse(scene: Scene) {
+    const detached_house = createHouse(scene, 1); //.clone("clonedHouse");
+    detached_house.rotation.y = -Math.PI / 16;
+    detached_house.position.x = -6.8;
+    detached_house.position.z = 2.5;
 
-    box.parent = house;
-    roof.parent = house;
+    const semi_house = createHouse(scene, 2); //.clone("clonedHouse");
+    semi_house.rotation.y = -Math.PI / 16;
+    semi_house.position.x = -4.5;
+    semi_house.position.z = 3;
 
-    const clonedHouse = house.clone("clonedHouse");
-    clonedHouse.position.x = 1;
+    //each entry is an array [house type, rotation, x, z]
+    const places: number[] [] = []; 
+    places.push([1, -Math.PI / 16, -6.8, 2.5 ]);
+    places.push([2, -Math.PI / 16, -4.5, 3 ]);
+    places.push([2, -Math.PI / 16, -1.5, 4 ]);
+    places.push([2, -Math.PI / 3, 1.5, 6 ]);
+    places.push([2, 15 * Math.PI / 16, -6.4, -1.5 ]);
+    places.push([1, 15 * Math.PI / 16, -4.1, -1 ]);
+    places.push([2, 15 * Math.PI / 16, -2.1, -0.5 ]);
+    places.push([1, 5 * Math.PI / 4, 0, -1 ]);
+    places.push([1, Math.PI + Math.PI / 2.5, 0.5, -3 ]);
+    places.push([2, Math.PI + Math.PI / 2.1, 0.75, -5 ]);
+    places.push([1, Math.PI + Math.PI / 2.25, 0.75, -7 ]);
+    places.push([2, Math.PI / 1.9, 4.75, -1 ]);
+    places.push([1, Math.PI / 1.95, 4.5, -3 ]);
+    places.push([2, Math.PI / 1.9, 4.75, -5 ]);
+    places.push([1, Math.PI / 1.9, 4.75, -7 ]);
+    places.push([2, -Math.PI / 3, 5.25, 2 ]);
+    places.push([1, -Math.PI / 3, 6, 4 ]);
 
-    return clonedHouse;
+    const houses: Mesh[] = [];
+    for (let i = 0; i < places.length; i++) {
+      if (places[i][0] === 1) {
+          houses[i] = detached_house.createInstance("house" + i);
+      }
+      else {
+          houses[i] = semi_house.createInstance("house" + i);
+      }
+        houses[i].rotation.y = places[i][1];
+        houses[i].position.x = places[i][2];
+        houses[i].position.z = places[i][3];
+    }
+
+    return houses;
   }
   // --------------------------------------------
 
@@ -215,9 +247,8 @@ import {
       ground?: Mesh;
       roof?: Mesh;
       skybox?: Mesh;
-      clonedHouse?: Mesh;
+      house?: any;
       trees?: SpriteManager;
-      house?: Mesh;
     }
   
     let that: SceneData = { scene: new Scene(engine) };
@@ -232,8 +263,8 @@ import {
     // housing
     //that.box = createBox(that.scene);
     //that.roof = createRoof(that.scene);
-    that.house = createHouse(that.scene);
-    that.clonedHouse = cloneHouses(that.scene);
+    // that.house = createHouse(that.scene);
+    that.house = cloneHouse(that.scene);
     
     
 
