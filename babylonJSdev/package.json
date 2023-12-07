@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@babylonjs/gui": "^6.33.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   }

@@ -33,22 +33,45 @@ import {
     ExecuteCodeAction,
     AnimationPropertiesOverride,
   } from "@babylonjs/core";
+  import HavokPhysics from "@babylonjs/havok";
+  import { HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
   // ----------------------------------------------
-  
+  // initialse physics
+  let initializedHavok;
+  HavokPhysics().then((havok) => {
+    initializedHavok = havok;
+  });
+
+  const havokInstance = await HavokPhysics();
+  const havokPlugin = new HavokPlugin(true, havokInstance);
+
+  globalThis.HK = await HavokPhysics();
+
   //-----------------------------------------------
   // MIDDLE OF CODE - FUNCTIONS
   // Detailed ground
-  function createGround(scene: Scene){
-    //Create Village ground
-    const ground = MeshBuilder.CreateGround("ground", {height: 10, width: 10, subdivisions: 4});
+  function createBox(scene: Scene, x: number, y: number, z: number){
+    let box: Mesh = MeshBuilder.CreateBox("box", {});
+    box.position.x = x; 
+    box.position.y = y; 
+    box.position.z = z; 
+    const boxAggregate = new PhysicsAggregate(box, PhysicsShapeType.BOX, { mass: 10 }, scene);
+    return box; 
+   } 
+    
+   function createGround(scene: Scene) {
+    const ground: Mesh = MeshBuilder.CreateGround("ground", {height: 10, width: 10, 
+   subdivisions: 4});
+    const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, 
+   scene);
     return ground;
-  }
+   }
   
   let keyDownMap: any[] = [];
 
-  function importPlayerMesh(scene, x: number, y: number) {
+  function importPlayerMesh(scene: Scene, collider: Mesh, x: number, y: number) {
     let tempItem = { flag: false } 
-    let item = SceneLoader.ImportMesh("", "./models/", "dummy3.babylon", scene, 
+    let item: any = SceneLoader.ImportMesh("", "./models/", "dummy3.babylon", scene, 
     function(newMeshes, particleSystems, skeletons) {
       let mesh = newMeshes[0];
       let skeleton = skeletons[0];
@@ -64,7 +87,7 @@ import {
       // let idleRange: any = skeleton.getAnimationRange("YBot_Idle");
 
       let animating: boolean = false;
-  
+
       scene.onBeforeRenderObservable.add(()=> {
         let keydown: boolean = false; 
         if (keyDownMap["w"] || keyDownMap["ArrowUp"]) {
@@ -97,8 +120,16 @@ import {
           animating = false; 
           scene.stopAnimation(skeleton);
         }
+        // collision
+        if (mesh.intersectsMesh(collider)) {
+          console.log("COLLIDED");
+        }
+      });
+      // physiccs collision
+      item = mesh;
+      let playerAggregate = new PhysicsAggregate(item, PhysicsShapeType.CAPSULE, {mass: 0}, scene);
+      playerAggregate.body.disablePreStep = false;
 
-      }); 
     });
     return item; 
   } 
@@ -172,19 +203,24 @@ import {
       camera?: Camera;
       ground?: Mesh;
       skybox?: Mesh;
+      box?: Mesh;
     }
   
     let that: SceneData = { scene: new Scene(engine) };
     that.scene.debugLayer.show();
 
+    // initialize physics
+    that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
     // any further code here
-    that.importMesh = importPlayerMesh(that.scene, 0, 0);
-    that.actionManager = actionManager(that.scene);
+    
 
     
     //--------------------------------------------------
     that.ground = createGround(that.scene);
     that.skybox = createSkybox(that.scene);
+    that.box = createBox(that.scene, 2, 2, 3);
+    that.importMesh = importPlayerMesh(that.scene, that.box, 0, 0);
+    that.actionManager = actionManager(that.scene);
     // scene lighting and camera
     that.hemisphericLight = createHemiLight(that.scene);
     that.camera = createArcRotateCamera(that.scene);
