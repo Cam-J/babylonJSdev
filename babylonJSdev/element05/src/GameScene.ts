@@ -248,14 +248,7 @@ counterText.fontSize = 20;
     sphere.position.x = x;
     sphere.position.y = y;
     sphere.position.z = z;
-
-    //apply texture
-    const roofMat = new StandardMaterial("roofMat");
-    roofMat.diffuseTexture = new Texture("https://assets.babylonjs.com/environments/roof.jpg");
-
-    const sphereMat = new StandardMaterial("sphereMat");
-    sphereMat.diffuseTexture = new Texture("./textures/grass.png");
-
+    
     const sphereAggregate = new PhysicsAggregate(sphere, PhysicsShapeType.SPHERE, { mass: 0 }, scene);
 
     return sphere;
