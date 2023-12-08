@@ -3,10 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "havok": "cp ./node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm ./babylonJSdev/node_modules/.vite/deps",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "element01build": "tsc && vite build element01",
+    "element01preview": "tsc && vite preview element01",
+    "element02build": "tsc && vite build element02",
+    "element02preview": "tsc && vite preview element02",
+    "element03build": "tsc && vite build element03",
+    "element03preview": "tsc && vite preview element03",
+    "element04build": "tsc && vite build element04",
+    "element04preview": "tsc && vite preview element04",
+    "element05build": "tsc && vite build element05",
+    "element05preview": "tsc && vite preview element05"
   },
   "devDependencies": {
     "@babylonjs/gui": "^6.33.0",

@@ -30,6 +30,7 @@ import {
     BoxParticleEmitter,
   } from "@babylonjs/core";
   // ----------------------------------------------
+  const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
   
   //-----------------------------------------------
   // MIDDLE OF CODE - FUNCTIONS
@@ -216,7 +217,7 @@ import {
       break;
     }
   }
-  function createArcRotateCamera(scene: Scene) {
+  function createArcRotateCamera(scene: Scene, canvas: HTMLCanvasElement) {
     let camAlpha = -Math.PI / 2,
       camBeta = Math.PI / 2.5,
       camDist = 10,
@@ -229,7 +230,7 @@ import {
       camTarget,
       scene,
     );
-    camera.attachControl(true);
+    camera.attachControl(canvas, true);
     return camera;
   }
   // ---------------------------------------------------
@@ -252,7 +253,6 @@ import {
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
 
     // any further code here
     that.terrain = createTerrain(that.scene);
@@ -270,7 +270,7 @@ import {
 
     // scene lighting and camera
     that.hemisphericLight = createHemiLight(that.scene);
-    that.camera = createArcRotateCamera(that.scene);
+    that.camera = createArcRotateCamera(that.scene, canvas);
 
     return that;
   }

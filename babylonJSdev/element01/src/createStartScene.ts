@@ -14,7 +14,8 @@ import {
     Engine,
   } from "@babylonjs/core";
   // ----------------------------------------------
-  
+  const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
+
   //-----------------------------------------------
   // MIDDLE OF CODE - FUNCTIONS
   function createBox(scene: Scene, px: number, py: number, pz: number, sx: number, sy: number, sz: number) {
@@ -51,7 +52,7 @@ import {
     return ground;
   }
   
-  function createArcRotateCamera(scene: Scene) {
+  function createArcRotateCamera(scene: Scene, canvas: HTMLCanvasElement) {
     let camAlpha = -Math.PI / 2,
       camBeta = Math.PI / 2.5,
       camDist = 10,
@@ -64,7 +65,7 @@ import {
       camTarget,
       scene,
     );
-    camera.attachControl(true);
+    camera.attachControl(canvas, true);
     return camera;
   }
   // ---------------------------------------------------
@@ -82,13 +83,12 @@ import {
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
-  
+    
     //createBox(scene, posX, posY, posZ, scaleX, scaleY, scaleZ)
     that.box = createBox(that.scene, 2, 5, 3, 3, 2, 1);
     that.light = createLight(that.scene);
     that.sphere = createSphere(that.scene);
     that.ground = createGround(that.scene);
-    that.camera = createArcRotateCamera(that.scene);
+    that.camera = createArcRotateCamera(that.scene, canvas);
     return that;
   }

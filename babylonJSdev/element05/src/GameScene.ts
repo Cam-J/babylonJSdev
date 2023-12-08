@@ -49,7 +49,7 @@ import {
 
   globalThis.HK = await HavokPhysics();
   //-----------------------------------------------------
-
+  const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 const counterText = new GUI.TextBlock();
 counterText.text = "Collision Counter: 0";
 counterText.color = "White";
@@ -290,7 +290,7 @@ counterText.fontSize = 20;
     return light;
   }
   
-  function createArcRotateCamera(scene: Scene) {
+  function createArcRotateCamera(scene: Scene, canvas: HTMLCanvasElement) {
     let camAlpha = -Math.PI / 2,
       camBeta = Math.PI / 2.5,
       camDist = 10,
@@ -303,7 +303,7 @@ counterText.fontSize = 20;
       camTarget,
       scene,
     );
-    camera.attachControl(false);
+    camera.attachControl(canvas, true);
     return camera;
   }
   //----------------------------------------------------------
@@ -326,7 +326,6 @@ counterText.fontSize = 20;
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
     //initialise physics
     that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
     let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI", true);
@@ -352,7 +351,7 @@ counterText.fontSize = 20;
     //Scene Lighting & Camerar
     that.hemisphericLight = createHemiLight(that.scene);
     that.spotLight = createSpotLight(that.scene, 2, 5, 2);
-    that.camera = createArcRotateCamera(that.scene);
+    that.camera = createArcRotateCamera(that.scene, canvas);
 
     let shadowGenerator = new ShadowGenerator(1024, that.spotLight);
     shadowGenerator.addShadowCaster(that.box);

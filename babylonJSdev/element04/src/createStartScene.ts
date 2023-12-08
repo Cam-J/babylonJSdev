@@ -50,6 +50,7 @@ import {
   globalThis.HK = await HavokPhysics();
 
   // ----------------------------------------
+  const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
   // Menu
   function createSceneButton(scene: Scene, name: string, index: string, x: string, 
     y: string, advtex){
@@ -199,7 +200,7 @@ import {
     return light;
   }
 
-  function createArcRotateCamera(scene: Scene) {
+  function createArcRotateCamera(scene: Scene, canvas: HTMLCanvasElement) {
     let camAlpha = -Math.PI / 2,
       camBeta = Math.PI / 2.5,
       camDist = 10,
@@ -212,7 +213,7 @@ import {
       camTarget,
       scene,
     );
-    camera.attachControl(true);
+    camera.attachControl(canvas, true);
     return camera;
   }
   // ---------------------------------------------------
@@ -233,7 +234,6 @@ import {
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
 
     // initialize physics
     that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
@@ -250,7 +250,7 @@ import {
     //that.actionManager = actionManager(that.scene);
     // scene lighting and camera
     that.hemisphericLight = createHemiLight(that.scene);
-    that.camera = createArcRotateCamera(that.scene);
+    that.camera = createArcRotateCamera(that.scene, canvas);
 
     return that;
   }

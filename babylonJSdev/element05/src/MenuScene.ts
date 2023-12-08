@@ -35,7 +35,7 @@ import {
   import HavokPhysics from "@babylonjs/havok";
   import { HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
   //----------------------------------------------------
-
+  const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
   function createText(scene: Scene, theText: string, x: string, y: string, s: string, c: string, advtex) {
     let text = new GUI.TextBlock();
     text.text = theText;
@@ -137,7 +137,7 @@ import {
     return light;
   }
   
-  function createArcRotateCamera(scene: Scene) {
+  function createArcRotateCamera(scene: Scene, canvas: HTMLCanvasElement) {
     let camAlpha = -Math.PI / 2,
       camBeta = Math.PI / 2.5,
       camDist = 10,
@@ -150,7 +150,7 @@ import {
       camTarget,
       scene,
     );
-    camera.attachControl(true);
+    camera.attachControl(canvas, true);
     return camera;
   }
   //----------------------------------------------------------
@@ -178,7 +178,7 @@ import {
     that.skybox = createSkybox(that.scene);
     //Scene Lighting & Camera
     that.hemisphericLight = createHemiLight(that.scene);
-    that.camera = createArcRotateCamera(that.scene);
+    that.camera = createArcRotateCamera(that.scene, canvas);
     return that;
   }
   //----------------------------------------------------
