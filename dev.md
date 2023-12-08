@@ -1,18 +1,4 @@
-# Notes
-Initial set up after issues with previous enviroment - 26/10/23
-
-# ELEMENT 05
--- Player model random model
--- Fixed Camera to player model
--- When player model interact with target 
--- target drops stuff
--- player picks up stuff
--- counter goes up
--- when player gets bored
--- player opens menu
--- player resets game
--- reset counter
--- go again
+# Element 05 Documentation
 
 # Element 05 Documentation
 
@@ -20,8 +6,7 @@ Initial set up after issues with previous enviroment - 26/10/23
 
 ## Top of Code - Importing BabylonJS
 
-This code handles the necessary imports for BabylonJS as well as any custom functions.
-
+This section imports necessary modules and libraries for Babylon.js, including tools for debugging and inspecting the scene, various scene components, the GUI module, and the Havok physics engine.
 ```typescript
 import setSceneIndex from "./index";
 import "@babylonjs/core/Debug/debugLayer";
@@ -121,8 +106,7 @@ function createMenuButton(scene: Scene, name: string, index: string, x: string, 
 
 ## Player movement and Mesh
 
-This section of the code imports a model to act as the player, handles animation of model and allows for user input to control directional movement, This code also includes 
-the handling of physics to aid in identifying when the player collides with an object.
+This section of the code imports a model to act as the player, handles animation of the model, and allows for user input to control directional movement. This code also includes the handling of physics to aid in identifying when the player collides with an object.
 ```Typescript
 let keyDownMap: any[] = [];
 let walkingSpeed: number = 0.001;
@@ -316,5 +300,266 @@ function importPlayerMesh(scene: Scene, collider: Mesh, x: number, y: number) {
 
     return sphere;
   }
+  ```
 
+  ## Skybox
+  This code adds a skybox to the background of the scene.
+  ```Typescript
+  function createSkybox(scene: Scene) {
+    //Skybox
+    const skybox = MeshBuilder.CreateBox("skyBox", {size:150}, scene);
+	  const skyboxMaterial = new StandardMaterial("skyBox", scene);
+	  skyboxMaterial.backFaceCulling = false;
+	  skyboxMaterial.reflectionTexture = new CubeTexture("textures/skybox", scene);
+	  skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+	  skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
+	  skyboxMaterial.specularColor = new Color3(0, 0, 0);
+	  skybox.material = skyboxMaterial;
+    return skybox;
+  }
+  ```
+
+  ## ArcRotateCamera
+
+  This is the light used in the scene to provide lighting on the objects present.
+  ```Typescript
+  function createArcRotateCamera(scene: Scene) {
+    let camAlpha = -Math.PI / 2,
+      camBeta = Math.PI / 2.5,
+      camDist = 10,
+      camTarget = new Vector3(0, 0, 0);
+    let camera = new ArcRotateCamera(
+      "camera1",
+      camAlpha,
+      camBeta,
+      camDist,
+      camTarget,
+      scene,
+    );
+    camera.attachControl(false);
+    return camera;
+  }
+  ```
+
+  ## Rendering Area
+
+  ```typescript
+  export default function GameScene(engine: Engine) {
+    interface SceneData {
+      scene: Scene;
+      box?: Mesh;
+      ground?: Mesh;
+      importMesh?: any;
+      actionManager?: any;
+      skybox?: Mesh;
+      light?: Light;
+      spotLight?: SpotLight;
+      hemisphericLight?: HemisphericLight;
+      camera?: Camera;
+      spheres?: Mesh;
+    }
+  
+    let that: SceneData = { scene: new Scene(engine) };
+    that.scene.debugLayer.show();
+    //initialise physics
+    that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
+    let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI", true);
+
+    //----------------------------------------------------------
+
+    //any further code goes here-----------
+    that.box = createBox(that.scene, 2, 2, 2);
+    that.box = createBox(that.scene, -1.5, 5, -3.2);
+    that.box = createBox(that.scene, 1.2, 1, -2);
+    that.box = createBox(that.scene, 2.3, 2.3, 0.4);
+    that.ground = createGround(that.scene);
+    that.spheres = createSphere(that.scene, 0.4, 1, 2.4);
+    that.spheres = createSphere(that.scene, 4.2, 1, -1.3);
+    that.spheres = createSphere(that.scene, -1.2, 1, 0.6);
+    that.spheres = createSphere(that.scene, -3, 1, 4.1);
+    that.spheres = createSphere(that.scene, 1, 1, -4);
+    that.importMesh = importPlayerMesh(that.scene, that.spheres, 0, 0);
+    that.actionManager = actionManager(that.scene);
+    let button1 = createMenuButton(that.scene, "but1", "Menu", "-600px", "-200px", advancedTexture);
+
+    that.skybox = createSkybox(that.scene);
+    //Scene Lighting & Camerar
+    that.hemisphericLight = createHemiLight(that.scene);
+    that.spotLight = createSpotLight(that.scene, 2, 5, 2);
+    that.camera = createArcRotateCamera(that.scene);
+
+    let shadowGenerator = new ShadowGenerator(1024, that.spotLight);
+    shadowGenerator.addShadowCaster(that.box);
+    shadowGenerator.useExponentialShadowMap = true;
+    return that;
+  }
+  ```
+  # MenuScene.ts documentation
+
+  ## Top of Code - Importing BabylonJS
+
+  This section imports necessary modules and libraries for Babylon.js, including tools for debugging and inspecting the scene, various scene components, the GUI module, and the Havok physics engine.
+  ```typescript
+  import setSceneIndex from "./index";
+  import "@babylonjs/core/Debug/debugLayer";
+  import "@babylonjs/inspector";
+  import {
+      Scene,
+      ArcRotateCamera,
+      Vector3,
+      Vector4,
+      HemisphericLight,
+      SpotLight,
+      MeshBuilder,
+      Mesh,
+      Light,
+      Camera,
+      Engine,
+      StandardMaterial,
+      Texture,
+      Color3,
+      Space,
+      ShadowGenerator,
+      PointLight,
+      DirectionalLight,
+      CubeTexture,
+      Sprite,
+      SpriteManager,
+      SceneLoader,
+      ActionManager,
+      ExecuteCodeAction,
+      AnimationPropertiesOverride,
+      Sound
+    } from "@babylonjs/core";
+    import * as GUI from "@babylonjs/gui";
+    import HavokPhysics from "@babylonjs/havok";
+    import { HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+  ```
+  ## GUI Button Text
+  This function creates a GUI text block with specified properties, such as text content, color, font size, and position. It adds the text block to the provided advanced texture and returns the created text block.
+  ```typescript
+  function createText(scene: Scene, theText: string, x: string, y: string, s: string, c: string, advtex) {
+    let text = new GUI.TextBlock();
+    text.text = theText;
+    text.color = c;
+    text.fontSize = s;
+    text.fontWeight = "bold"; //can add parameter for this if you wish
+    text.left = x;
+    text.top = y;
+    advtex.addControl(text);
+    return text;
+  }
+  ```
+
+  ## GUI Rectangle Button
+  This function generates a GUI rectangle with specified properties, including dimensions, position, corner radius, color, thickness, and background. It adds the rectangle to the provided advanced texture and returns the created rectangle.
+  ```typescript
+    function createRectangle(scene: Scene, w: string, h: string, x: string, y: string, cr: number, c: string, t: number, bg: string, advtext) {
+    let rectangle = new GUI.Rectangle();
+    rectangle.width = w;
+    rectangle.height = h;
+    rectangle.left = x;
+    rectangle.top = y;
+    rectangle.cornerRadius = cr;
+    rectangle.color = c;
+    rectangle.thickness = t;
+    rectangle.background = bg;
+    advtext.addControl(rectangle);
+    return rectangle;
+  }
+  ```
+
+  ## Create Menu Button
+  This function produces a GUI button with specific properties like position, size, color, and style. It also includes a sound effect on button click and sets up a callback function to change the scene index when the button is clicked.
+  ```typescript
+  function createSceneButton(scene: Scene, name: string, index: string, x: string, y: string, advtex) {
+    let button = GUI.Button.CreateSimpleButton(name, index);
+        button.left = x;
+        button.top = y;
+        button.width = "160px";
+        button.height = "60px";
+        button.color = "Black";
+        button.cornerRadius = 20;
+        button.background = "Teal";
+
+        const buttonClick = new Sound("MenuClickSFX", "./audio/menu-click.wav", scene, null, {
+          loop: false,
+          autoplay: false,
+        });
+
+        button.onPointerUpObservable.add(function() {
+            console.log("It's not broken");
+            buttonClick.play();
+            setSceneIndex(1);
+        });
+        advtex.addControl(button);
+        return button;
+ }
+  ```
+  ## Skybox
+  This function creates a skybox in the scene using Babylon.js MeshBuilder. It applies a standard material with a cube texture for the skybox effect.This function creates a skybox in the scene using Babylon.js MeshBuilder. It applies a standard material with a cube texture for the skybox effect.
+  ```typescript
+    //Create Skybox
+  function createSkybox(scene: Scene) {
+    //Skybox
+    const skybox = MeshBuilder.CreateBox("skyBox", {size:150}, scene);
+	  const skyboxMaterial = new StandardMaterial("skyBox", scene);
+	  skyboxMaterial.backFaceCulling = false;
+	  skyboxMaterial.reflectionTexture = new CubeTexture("textures/skybox", scene);
+	  skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+	  skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
+	  skyboxMaterial.specularColor = new Color3(0, 0, 0);
+	  skybox.material = skyboxMaterial;
+    return skybox;
+  }
+  ```
+
+  ## ArcRotateCamera
+  This function sets up an arc-rotate camera with specified initial parameters, such as alpha, beta, distance, and target position. It enables user control for camera rotation.
+  ```typescript
+  function createArcRotateCamera(scene: Scene) {
+    let camAlpha = -Math.PI / 2,
+      camBeta = Math.PI / 2.5,
+      camDist = 10,
+      camTarget = new Vector3(0, 0, 0);
+    let camera = new ArcRotateCamera(
+      "camera1",
+      camAlpha,
+      camBeta,
+      camDist,
+      camTarget,
+      scene,
+    );
+    camera.attachControl(true);
+    return camera;
+  }
+  ```
+
+  ## Rendering Area
+  This is the main function for rendering the menu scene. It sets up the scene, GUI elements (text, buttons), skybox, lighting (hemispheric light), and camera (arc-rotate camera). The function returns an object containing the scene and optional elements like skybox, light, hemispheric light, and camera.
+  ```typescript
+  export default function MenuScene(engine: Engine) {
+    interface SceneData {
+      scene: Scene;
+      skybox?: Mesh;
+      light?: Light;
+      hemisphericLight?: HemisphericLight;
+      camera?: Camera;
+    }
+  
+    let that: SceneData = { scene: new Scene(engine) };
+    that.scene.debugLayer.show();
+    //----------------------------------------------------------
+
+    let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI", true);
+    let textBG = createRectangle(that.scene, "600px", "100px", "0px", "-200px", 20, "Black", 4, "Teal", advancedTexture);
+    let titleText = createText(that.scene, "Collect The Things", "0px", "-200px", "45", "White", advancedTexture);
+    let button1 = createSceneButton(that.scene, "but1", "Start Game", "0px", "-75px", advancedTexture);
+
+    that.skybox = createSkybox(that.scene);
+    //Scene Lighting & Camera
+    that.hemisphericLight = createHemiLight(that.scene);
+    that.camera = createArcRotateCamera(that.scene);
+    return that;
+  }
   ```
